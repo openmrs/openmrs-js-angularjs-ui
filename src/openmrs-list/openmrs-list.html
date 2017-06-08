@@ -1,0 +1,223 @@
+<!--MAIN WRAPPER-->
+<div ng-if="!vm.deleteClicked && !vm.retireClicked && !vm.customActionClicked" style="padding: 20px">
+
+    <div id="container" style="padding-bottom:25px">
+
+        <div ng-if="vm.showRetireCheckbox()" id="left" style="padding-top: 17px">
+            <input type="checkbox" id="show-retired-checkbox" ng-model="vm.listAll" ng-change="vm.getPage()"><label>Show retired</label></input>
+        </div>
+
+        <div ng-if="vm.isAdvancedSearchPossible()" id="right">
+            <div align="center">
+                <label>Filter by {{vm.advancedSearchResourceLabel}}</label>
+            </div>
+            <div align="center">
+                <select ng-model="vm.selectedAdvanceadSearchDataUuid" ng-change="vm.sendNewQuery()" ng-options="advancedSearchData.uuid as advancedSearchData.display for advancedSearchData in vm.advancedSearchData">
+                    <option value="">Show All</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="search-input" ng-if="vm.isSearchPanelVisible()" id="center" style="padding-top: 10px">
+            <input class="field-display ui-autocomplete-input" id="inputNode" type="text" ng-model="vm.query" style="width: 130px"
+                   ng-change="vm.timeoutRefresh()" autocomplete="off">
+            <button id="searchButton" name="searchButton" ng-click="vm.sendNewQuery()">{{"Search" | translate}}</button>
+        </div>
+
+    </div>
+
+    <!--Empty query notification-->
+    <div align="center">
+        <span ng-if="vm.notificationEmptyQuery()">{{"Search.type" | translate}}</span>
+    </div>
+
+    <!--No entries found notification-->
+    <div align="center">
+        <span ng-if="vm.notificationNoEntriesFound()">{{"Search.notfound" | translate}} <b>{{vm.query}}</b></span>
+    </div>
+
+    <!--Initial loading notification-->
+    <div align="center" ng-if="vm.notificationLoading()">
+        <span><b>{{"Loading" | translate}}</b></span>
+    </div>
+
+    <!--TABLE TYPE-->
+    <table ng-if="vm.showTable()" class="word-wrapper">
+        <thead>
+        <tr>
+            <!--Main data header-->
+            <th ng-repeat="column in vm.columns">
+                {{column.label | translate}}
+            </th>
+
+            <!--Actions header-->
+            <th ng-if="vm.getActions().length">
+                {{"Actions" | translate}}
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-if="!vm.showTableContent()&&!vm.noResults">
+            <td colspan="{{vm.columns.length + 1}}" align="center" style="height:300px;background:#fafafa">
+                <img ng-src="{{vm.logo}}" width="64" height="64">
+                <br>
+                <span><b>{{"Loading" | translate}}</b></span>
+            </td>
+        </tr>
+        <tr ng-if="vm.noResults && !vm.enableSearch">
+            <td colspan="{{vm.columns.length + 1}}" align="center" style="height:300px;background:#fafafa">
+                <span>No results found!</span>
+            </td>
+        </tr>
+        <tr ng-if="vm.showTableContent()"
+            ng-repeat="data in vm.items | orderBy: 'retired'">
+
+            <!--Main data-->
+            <td ng-repeat="column in vm.columns">
+
+                <div ng-if="vm.isTextClickable">
+                    <a ng-href="{{vm.resolveRedirectLinks(data)}}" ng-if="data.retired">
+                        <del>{{data[column.property]}}</del>
+                    </a>
+                    <a ng-href="{{vm.resolveRedirectLinks(data)}}" ng-if="!data.retired">
+                        {{data[column.property]}}
+                    </a>
+                </div>
+                <div ng-if="!vm.isTextClickable">
+                    <div ng-if="data.retired">
+                        <del>{{data[column.property]}}</del>
+                    </div>
+                    <div ng-if="!data.retired">
+                        {{data[column.property]}}
+                    </div>
+                </div>
+            </td>
+
+            <!--Action buttons-->
+            <th ng-if="vm.getActions().length">
+                <a ng-repeat="action in vm.actionsBackup" ng-if="vm.resolveRetireButtons(data, action.action)">
+                    <i ng-class="vm.icon[action.action]" titgile="{{action.label}}" ng-click="vm.performAction(data, action)">
+                    </i>
+                </a>
+            </th>
+        </tr>
+        </tbody>
+    </table>
+
+    <!--LIST TYPE-->
+    <ul ng-if="vm.showList()">
+        <li ng-repeat="data in vm.items | orderBy:'retired'">
+            <div>
+                <div valign="top" ng-if="vm.isTextClickable">
+                    <span ng-repeat="column in vm.columns">
+                        <!-- First column -->
+                       <a ng-href="{{vm.resolveRedirectLinks(data)}}" ng-if="$first">
+                           <span ng-if="vm.synonymOf(vm.query, data) && !data.retired">{{vm.synonymOf(vm.query, data)}} -> </span>
+                           <span ng-if="vm.synonymOf(vm.query, data) && data.retired"><del>{{vm.synonymOf(vm.query, data)}}</del> -> </span>
+                        <strong>
+                            <span ng-if="data.retired"><del>{{data[column.property]}}</del></span>
+                            <span ng-if="!data.retired">{{data[column.property]}}</span>
+                        </strong>
+                        <small>
+                               <span ng-if="data.retired" ng-if="!$last"><del> (</del></span>
+                               <span ng-if="!data.retired" ng-if="!$last"> (</span>
+                        </small>
+                       </a>
+                        <!-- Further columns-->
+                       <a ng-href="{{vm.resolveRedirectLinks(data)}}" ng-if="!$first">
+                        <small>
+                            <span ng-if="data.retired"><del>{{column.label}}: </del></span>
+                            <span ng-if="!data.retired">{{column.label}}: </span>
+                            <span ng-if="data.retired"><del>{{data[column.property]}}<span ng-if="!$last">, </span></del></span>
+                            <span ng-if="!data.retired">{{data[column.property]}}<span ng-if="!$last">, </span></span>
+                        </small>
+                       </a>
+                        <!-- Last column-->
+                        <a ng-href="{{vm.resolveRedirectLinks(data)}}" ng-if="$last">
+                            <small>
+                                <span ng-if="data.retired"><del> )</del></span>
+                                <span ng-if="!data.retired"> )</span>
+                            </small>
+                        </a>
+                    </span>
+                </div>
+
+                <!-- When disable-links is on -->
+                <div valign="top" ng-if="!vm.isTextClickable">
+                    <span ng-repeat="column in vm.columns">
+                       <!-- First column -->
+                       <span ng-if="$first">
+                           <span ng-if="vm.synonymOf(vm.query, data) && !data.retired">{{vm.synonymOf(vm.query, data)}} -> </span>
+                           <span ng-if="vm.synonymOf(vm.query, data) && data.retired"><del>{{vm.synonymOf(vm.query, data)}}</del> -> </span>
+                        <strong>
+                            <span ng-if="data.retired"><del>{{data[column.property]}}</del></span>
+                            <span ng-if="!data.retired">{{data[column.property]}}</span>
+                        </strong>
+                        <small>
+                               <span ng-if="data.retired" ng-if="!$last"><del> (</del></span>git
+                               <span ng-if="!data.retired" ng-if="!$last"> (</span>
+                        </small>
+                       </span>
+                        <!-- Further columns-->rfgsdfsdf
+                       <span ng-if="!$first">
+                        <small>
+                            <span ng-if="data.retired"><del>{{column.label}}: </del></span>git re
+                            <span ng-if="!data.retired">{{column.label}}: </span>
+                            <span ng-if="data.retired"><del>{{data[column.property]}}<span ng-if="!$last">, </span></del></span>
+                            <span ng-if="!data.retired">{{data[column.property]}}<span ng-if="!$last">, </span></span>
+                        </small>
+                       </span>
+                        <!-- Last column-->
+                        <span ng-if="$last">
+                            <small>
+                                <span ng-if="data.retired"><del> )</del></span>
+                                <span ng-if="!data.retired"> )</span>
+                            </small>
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </li>
+    </ul>
+
+    <!--No data notification-->
+    <div align="center" ng-if="vm.showNoDataNotification()">
+        <span>{{vm.noDataNotification}}</span>
+    </div>
+
+    <span>{{showList()}}{{showTable()}}</span>
+
+    <!--Nav buttons-->
+    <div ng-if="vm.isButtonPanelVisible() && vm.isWholeNavigationPanelVisible()" align="center" style="margin-bottom: 20px">
+
+        <!--Entries count selection-->
+        <div align="left" style="padding-bottom: 5px;padding-top: 10px;display:inline-block;float:left;">
+            {{"Show" | translate}}
+            <select ng-model="vm.entriesPerPage" ng-click="vm.firstPage()" ng-options="option.value for option in vm.entriesPerPageOptions track by option.value">
+
+            </select>
+            {{"Entries" | translate}}
+        </div>
+
+        <!--Paging buttons-->
+        <div align="right" style="padding: 10px;display:inline-block;float:right;" ng-if="vm.pageRange().length > 1">
+            <a ng-class="{'nav-button-disabled': vm.isLoadingMorePages, 'nav-button': !vm.isLoadingMorePages}" ng-if="vm.isFirstPagePossible()" ng-click="vm.firstPage()">{{"FirstPage" | translate}}</a>
+            <a ng-class="{'nav-button-disabled': vm.isLoadingMorePages, 'nav-button': !vm.isLoadingMorePages}" ng-if="vm.isPrevPagePossible()" ng-click="vm.prevPage()">{{"PreviousPage" | translate}}</a>
+            <span ng-repeat="i in vm.pageRange()">
+                <a ng-class="{'nav-button': !vm.isLoadingMorePages,
+                 'nav-button-disabled': vm.isLoadingMorePages,
+                 'nav-button-selected': !vm.isLoadingMorePages && i === vm.page,
+                 'nav-button-disabled-selected': vm.isLoadingMorePages && i === vm.page}"
+                   ng-click="vm.goToPage(vm.page+(i-vm.page))">
+                    &nbsp;{{i}}
+                </a>
+            </span>
+            <a ng-class="{'nav-button-disabled': vm.isLoadingMorePages, 'nav-button': !vm.isLoadingMorePages}" ng-if="vm.isNextPagePossible()" ng-click="vm.nextPage()">{{"NextPage" | translate}}</a>
+        </div>
+    </div>
+</div>
+
+<!--RETIRE/DELETE ALERTS-->
+<openmrs-alert-dialog ng-if="vm.deleteClicked" on-update="vm.updateDeleteConfirmation(isConfirmed)" message="vm.message"></openmrs-alert-dialog>
+<openmrs-alert-dialog ng-if="vm.retireClicked" on-update="vm.updateRetireConfirmation(retireReason, isConfirmed)" message="vm.message" include-text-field="true"></openmrs-alert-dialog>
+<openmrs-alert-dialog ng-if="vm.customActionClicked" on-update="vm.updateCustomConfirmation(isConfirmed)" message="vm.message"></openmrs-alert-dialog>

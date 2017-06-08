@@ -1,0 +1,72 @@
+{
+  "name": "@openmrs/angularjs-openmrs-ui-components",
+  "version": "0.1.0",
+  "description": "AngularJS (1.x) library with OpenMRS UI components",
+  "main": "lib/index.js",
+  "engines": {
+    "node": "^6.10.0"
+  },
+  "scripts": {
+    "clean": "rimraf lib",
+    "build:dev": "webpack --progress --colors --env=dev",
+    "build:prod": "webpack --progress --colors --env=prod",
+    "build": "rimraf lib && karma start && webpack --progress --colors --env=prod",
+    "test": "karma start",
+    "test:dev": "karma start --singleRun=false",
+    "prepublish": "rimraf lib && webpack --progress --colors --env=prod"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openmrs/openmrs-web-angularjs-ui-components.git"
+  },
+  "keywords": [
+    "angularjs",
+    "openmrs"
+  ],
+  "author": "rkorytkowski",
+  "license": "MPL-2.0",
+  "homepage": "https://github.com/openmrs/openmrs-web-angularjs-ui-components#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "angular-mocks": "^1.6.4",
+    "angular-route": "^1.6.4",
+    "angular-sanitize": "^1.6.4",
+    "angular-toastr": "^2.1.1",
+    "babel-core": "^6.24.1",
+	"babel-polyfill": "^6.23.0",
+    "babel-loader": "^7.0.0",
+    "babel-preset-env": "^1.4.0",
+    "babel-preset-es2015": "^6.24.1",
+    "compass-mixins": "^0.12.10",
+    "css-loader": "^0.28.4",
+    "file-loader": "^0.11.2",
+    "html-loader": "^0.4.5",
+    "image-webpack-loader": "^3.3.1",
+    "jasmine-core": "^2.6.2",
+    "json-loader": "^0.5.4",
+    "karma": "^1.7.0",
+    "karma-chrome-launcher": "^2.1.1",
+    "karma-coverage": "^1.1.1",
+    "karma-firefox-launcher": "^1.0.1",
+    "karma-jasmine": "^1.1.0",
+    "karma-phantomjs-launcher": "^1.0.4",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^2.0.3",
+    "node-sass": "^4.5.3",
+    "rimraf": "^2.6.1",
+    "sass-loader": "^6.0.5",
+    "style-loader": "^0.18.2",
+    "url-loader": "^0.5.8",
+    "webpack": "^2.5.1",
+    "webpack-node-externals": "^1.6.0",
+    "yargs": "^8.0.1"
+  },
+  "dependencies": {
+    "@openmrs/angularjs-openmrs-api": "^0.5.1",
+    "angular-animate": "^1.6.4",
+    "angular-dropdowns": "^1.5.1",
+    "angular-ui-bootstrap": "^2.5.0"
+  }
+}
